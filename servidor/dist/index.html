@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" media="screen" href="main.css" />
+    <script src="main.js"></script>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+    <link href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" rel="stylesheet" integrity="sha384-wvfXpqpZZVQGK6TAh5PVlGOfQNHSoD2xbE+QkPxCAFlNEevoEH3Sl0sibVcOQVnN" crossorigin="anonymous">
+    <!--Importando biblioteca -->
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <title>Page Title</title>
+</head>
+<body>
+    <div class="container">
+        <h2>Cadastro de nomes</h2>
+        <div class="row">
+            <div class="col">
+                <input type="text" id="texto" class="form-control"
+                    style="display:inline;vertical-align: middle; width: auto; "
+                >
+
+                <button id="botao" class="btn btn-primary">
+                    Enviar
+                    <i class="fa fa-check" aria-hidden="true"></i>
+                </button>
+
+            </div>
+        </div>
+        <hr>
+        <h2 style="margin-top:40px;">Lista de nomes</h2>
+        <div class="row">
+
+            <div class="col-6">
+                <ul class="list-group" id="lista"></ul>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+
+        /* 
+            essa sintaxe garante que o script 
+            é carregado antes da página
+        */
+        window.onload = () =>{
+            
+            // constate do tipo lista que recebe a lista do próprio documento
+            const lista = document.querySelector('#lista');
+
+            const botao = document.querySelector('#botao');
+
+            const texto = document.querySelector('#texto');
+
+            // evento onClick pro botao enviar - chama a funcao create
+            botao.addEventListener('click', create);
+            
+            // evento onClick pro botao excluir - chama a funcao del
+            lista.addEventListener('click', del);
+
+            read();
+        }
+
+        function templateLi(id, nome){
+            /*
+                data-id recebe o id recebido para passar o id para 
+                a funcao excluir abaixo. Assim o icone fica possuindo
+                um id que eh o numero di id recebido
+            */
+            return `
+                <li class="list-group-item">${nome}
+                    <i class="btn btn-danger delete fa fa-trash"
+                        style="float: rigth; margin-left: 5px;"
+                        data-id="${id}";
+                    ></i>
+                </li>
+            `;
+
+        }
+
+        function read(){
+            // limpar dados antigos da lista
+           lista.innerHTML = '';
+            
+            // chamada ajax para o servidor na rota /read
+            axios.get('/read')
+                .then((response) =>{
+                    
+                    response.data.forEach(element =>{
+                        lista.innerHTML += templateLi(element.id, element.name)
+                    });        
+
+                })
+                .catch((error) =>{
+                    console.log(error);
+            });
+
+        }
+
+        function create(){
+            // resgatar os textos da input
+            const name = texto.value;
+
+            axios.post('/create', {name})
+                .then(function (response){
+                    console.log(response);
+                    // incluir novo nome na lista dinamicamente
+                    lista.innerHTML += templateLi(response.data[0], name);    
+                })
+                
+                .catch(function (error){
+                    console.log(error);
+                });
+            
+        }
+
+        function edit(){
+
+        }
+
+        function update(){
+
+        }
+        /*
+
+        */
+        function del(element){
+            console.log(element);
+            /*
+                se o ELEMENT possui na sua lista de CLASS uma delete
+                fazendo que apenas o botão"target"  clicado seja ouvido
+            */
+            if (element.target.classList.contains('delete'));
+                // id do icone do elemento excluir
+                const id = element.target.dataset.id;
+                
+                axios.delete(`/delete/${id}`)
+                    .then(function(response){
+                        if (response.status = 200){
+                            // excluir linha com ícone
+                            lista.removeChild(element.path[1]);
+                        }
+                        
+                    })
+                    .catch(function (error){
+                        console.log(error);
+                    });
+        }
+    
+    </script>
+</body>
+</html>

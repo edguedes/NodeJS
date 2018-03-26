@@ -28,12 +28,19 @@ server.use(restify.plugins.bodyParser());
 server.listen(8080, function () {
   console.log('%s listening at %s', server.name, server.url);
 });
+
+
+server.get('/',restify.plugins.serveStatic({
+  directory: './dist',
+  file: 'index.html'
+}));
+
 /*  
     Fazendo uma consulta a tabela REST
     e guardando o JSON ressposta vindo no paramentro RES
     dentro de uma variavel DADOS
 */
-server.get('/', function (req, res, next) {
+server.get('/read', function (req, res, next) {
      
     knex('rest').then((dados)=>{
        res.send(dados); 
@@ -110,8 +117,10 @@ server.del('/delete/:id', function (req, res, next) {
         // excluir dados pelo ID
         .delete()
         .then((dados)=>{
+           
             // caso retorne zero ou um erro | lembrar de importar a biblioteca de erros 
             if(!dados) return res.send(new errs.BadRequestError('nada encontrado'))
+            
             //como retornar uma consição de true exiba a mensagem
             res.send('dados excluido'); 
     }, next);    
